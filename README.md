@@ -10,5 +10,8 @@ Word Count console program written in GO to solve challenge in https://codingcha
 
         -c 
             print the byte counts
+            
+        -l
+            print the newline counts
 
         

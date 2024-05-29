@@ -10,6 +10,7 @@ const INVALID_ARGUMENTS_ERR = "invalid arguments."
 const CANT_OPEN_FILE_ERR = "can't open file."
 const CANT_GET_FILE_INFO_ERR = "can't get file info."
 const CLOSE_FILE_ERR = "can't close file"
+const FILE_READ_BUFFER_SIZE = 4096 // 4kb
 
 func exitWithError(errorMessage string) {
 	fmt.Println("Error:", errorMessage)
@@ -39,10 +40,25 @@ func main() {
 		if err != nil {
 			exitWithError(CANT_OPEN_FILE_ERR)
 		}
+		newlines := 0
+		data := make([]byte, FILE_READ_BUFFER_SIZE)
+		readBytes, fileReadErr := file.Read(data)
+		for fileReadErr == nil && readBytes != 0 {
+			for _, c := range string(data[:readBytes]) {
+				if c == '\n' {
+					newlines++
+				}
+			}
+			//fmt.Println("newlines:", newlines)
+			readBytes, fileReadErr = file.Read(data)
+		}
 		closeErr := file.Close()
+		fmt.Println(newlines, file.Name())
 		if closeErr != nil {
 			exitWithError(CLOSE_FILE_ERR)
 		}
+	default:
+		exitWithError(INVALID_ARGUMENTS_ERR)
 	}
 
 }
