@@ -21,7 +21,7 @@ func exitWithError(errorMessage string) {
 	os.Exit(1)
 }
 
-func main() {
+func readCommandLineArgs() (string, string) {
 	if len(os.Args) == 0 {
 		exitWithError(NO_ARGS_SUPPLIED_ERR)
 	}
@@ -31,55 +31,71 @@ func main() {
 	}
 	operationArg := os.Args[1]
 	filePath := os.Args[2]
+	return operationArg, filePath
+}
+
+func openFile(filePath string) (os.FileInfo, *os.File) {
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
 		exitWithError(CANT_GET_FILE_INFO_ERR)
 	}
+	file, err := os.Open(filePath)
+	if err != nil {
+		exitWithError(CANT_OPEN_FILE_ERR)
+	}
+	return fileInfo, file
+}
 
+func printFileByteCount(fileInfo os.FileInfo) {
+	fmt.Println(fileInfo.Size(), fileInfo.Name())
+}
+
+func printFileNewlineCount(file *os.File) {
+	newlines := 0
+	data := make([]byte, FILE_READ_BUFFER_SIZE)
+	readBytes, fileReadErr := file.Read(data)
+	for fileReadErr == nil && readBytes != 0 {
+		for _, c := range string(data[:readBytes]) {
+			if c == '\n' {
+				newlines++
+			}
+		}
+		readBytes, fileReadErr = file.Read(data)
+	}
+	fmt.Println(newlines, file.Name())
+}
+
+func printFileWordCount(fileInfo os.FileInfo, file *os.File) {
+	words := 0
+	data := make([]byte, fileInfo.Size()) // read the whole file
+	readBytes, fileReadErr := file.Read(data)
+	for fileReadErr == nil && readBytes != 0 {
+		strRead := string(data[:readBytes])
+		words += len(strings.Fields(strRead))
+		readBytes, fileReadErr = file.Read(data)
+	}
+	fmt.Println(words, file.Name())
+}
+
+func closeFile(file *os.File) {
+	closeErr := file.Close()
+	if closeErr != nil {
+		exitWithError(CLOSE_FILE_ERR)
+	}
+}
+
+func main() {
+	operationArg, filePath := readCommandLineArgs()
+	fileInfo, file := openFile(filePath)
 	switch operationArg {
 	case "-c", "-m":
-		fmt.Println(fileInfo.Size(), fileInfo.Name())
+		printFileByteCount(fileInfo)
 	case "-l":
-		file, err := os.Open(filePath)
-		if err != nil {
-			exitWithError(CANT_OPEN_FILE_ERR)
-		}
-		newlines := 0
-		data := make([]byte, FILE_READ_BUFFER_SIZE)
-		readBytes, fileReadErr := file.Read(data)
-		for fileReadErr == nil && readBytes != 0 {
-			for _, c := range string(data[:readBytes]) {
-				if c == '\n' {
-					newlines++
-				}
-			}
-			readBytes, fileReadErr = file.Read(data)
-		}
-		closeErr := file.Close()
-		fmt.Println(newlines, file.Name())
-		if closeErr != nil {
-			exitWithError(CLOSE_FILE_ERR)
-		}
+		printFileNewlineCount(file)
 	case "-w":
-		file, err := os.Open(filePath)
-		if err != nil {
-			exitWithError(CANT_OPEN_FILE_ERR)
-		}
-		words := 0
-		data := make([]byte, fileInfo.Size()) // read the whole file
-		readBytes, fileReadErr := file.Read(data)
-		for fileReadErr == nil && readBytes != 0 {
-			strRead := string(data[:readBytes])
-			words += len(strings.Fields(strRead))
-			readBytes, fileReadErr = file.Read(data)
-		}
-		closeErr := file.Close()
-		fmt.Println(words, file.Name())
-		if closeErr != nil {
-			exitWithError(CLOSE_FILE_ERR)
-		}
+		printFileWordCount(fileInfo, file)
 	default:
 		exitWithError(INVALID_ARGUMENTS_ERR)
 	}
-
+	closeFile(file)
 }
