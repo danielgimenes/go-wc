@@ -1,3 +1,6 @@
+// TODO organize error code, buffered read and counts into separate packages?
+// TODO add unit tests
+
 package main
 
 import (
@@ -6,32 +9,42 @@ import (
 	"strings"
 )
 
-const NO_ARGS_SUPPLIED_ERR = "no arguments were supplied."
-const INVALID_ARGUMENTS_ERR = "invalid arguments."
-const CANT_OPEN_FILE_ERR = "can't open file."
-const CANT_GET_FILE_INFO_ERR = "can't get file info."
-const CLOSE_FILE_ERR = "can't close file"
+type ErrorMessage string
+
+const (
+	NO_ARGS_SUPPLIED_ERR   ErrorMessage = "no arguments were supplied."
+	INVALID_ARGUMENTS_ERR  ErrorMessage = "invalid arguments."
+	CANT_OPEN_FILE_ERR     ErrorMessage = "can't open file."
+	CANT_GET_FILE_INFO_ERR ErrorMessage = "can't get file info."
+	CLOSE_FILE_ERR         ErrorMessage = "can't close file"
+)
+
+type Operation string
+
+const (
+	BYTE_COUNT_OPERATION    Operation = "-c"
+	CHAR_COUNT_OPERATION    Operation = "-m"
+	NEWLINE_COUNT_OPERATION Operation = "-l"
+	WORD_COUNT_OPERATION    Operation = "-w"
+)
+
 const FILE_READ_BUFFER_SIZE = 4096 // 4kb
 
-// TODO organize error code, buffered read and counts into modules
-// TODO add unit tests
-
-func exitWithError(errorMessage string) {
-	fmt.Println("Error:", errorMessage)
+func exitWithError(message ErrorMessage) {
+	fmt.Println("Error:", message)
 	os.Exit(1)
 }
 
-func readCommandLineArgs() (string, string) {
+func readCommandLineArgs() (Operation, string) {
 	if len(os.Args) == 0 {
 		exitWithError(NO_ARGS_SUPPLIED_ERR)
 	}
-
 	if len(os.Args) != 3 {
 		exitWithError(INVALID_ARGUMENTS_ERR)
 	}
 	operationArg := os.Args[1]
 	filePath := os.Args[2]
-	return operationArg, filePath
+	return Operation(operationArg), filePath
 }
 
 func openFile(filePath string) (os.FileInfo, *os.File) {
@@ -67,7 +80,7 @@ func printFileNewlineCount(file *os.File) {
 
 func printFileWordCount(fileInfo os.FileInfo, file *os.File) {
 	words := 0
-	data := make([]byte, fileInfo.Size()) // read the whole file
+	data := make([]byte, fileInfo.Size()) // read the whole file to avoid split words
 	readBytes, fileReadErr := file.Read(data)
 	for fileReadErr == nil && readBytes != 0 {
 		strRead := string(data[:readBytes])
@@ -88,11 +101,11 @@ func main() {
 	operationArg, filePath := readCommandLineArgs()
 	fileInfo, file := openFile(filePath)
 	switch operationArg {
-	case "-c", "-m":
+	case BYTE_COUNT_OPERATION, CHAR_COUNT_OPERATION:
 		printFileByteCount(fileInfo)
-	case "-l":
+	case NEWLINE_COUNT_OPERATION:
 		printFileNewlineCount(file)
-	case "-w":
+	case WORD_COUNT_OPERATION:
 		printFileWordCount(fileInfo, file)
 	default:
 		exitWithError(INVALID_ARGUMENTS_ERR)
