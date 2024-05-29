@@ -55,6 +55,11 @@ func TestFileByteCount(t *testing.T) {
 	}
 }
 
+func TestFileCharCount(t *testing.T) {
+	// should be the same as byte count
+	TestFileByteCount(t)
+}
+
 func TestFileNewlineCount(t *testing.T) {
 	var tests = []struct {
 		name        string
@@ -72,6 +77,30 @@ func TestFileNewlineCount(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, file := createTempFile(tt.fileContent)
 			result := FileNewlineCount(file)
+			tempFileCleanup(file)
+			if result != tt.want {
+				t.Errorf("Expected %d, received %v", tt.want, result)
+			}
+		})
+	}
+}
+
+func TestFileWordCount(t *testing.T) {
+	var tests = []struct {
+		name        string
+		fileContent string
+		want        int
+	}{
+		{"long content, simple", "Something something. Nonsense! Right? 1 2 3", 7},
+		{"long content, many symbols", "daniel@gmail.com 404-233-2233 :) \n\n\n\n\n", 3},
+		{"no content", "", 0},
+		{"just symbols", "\n\t\n@!@#$\n\b&", 2},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fileInfo, file := createTempFile(tt.fileContent)
+			result := FileWordCount(fileInfo, file)
 			tempFileCleanup(file)
 			if result != tt.want {
 				t.Errorf("Expected %d, received %v", tt.want, result)
