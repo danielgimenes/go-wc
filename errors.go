@@ -15,7 +15,7 @@ const (
 	CLOSE_FILE_ERR         ErrorMessage = "can't close file"
 )
 
-func exitWithError(message ErrorMessage) {
-	fmt.Println("Error:", message)
+func exitWithError(message ErrorMessage, err error) {
+	fmt.Printf("Error: %s. Details: %s\n", message, err)
 	os.Exit(1)
 }

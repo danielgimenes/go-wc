@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/danielgimenes/gowc/count_ops"
@@ -19,10 +20,10 @@ const (
 
 func readCommandLineArgs() (Operation, string) {
 	if len(os.Args) == 0 {
-		exitWithError(NO_ARGS_SUPPLIED_ERR)
+		exitWithError(NO_ARGS_SUPPLIED_ERR, nil)
 	}
 	if len(os.Args) != 3 {
-		exitWithError(INVALID_ARGUMENTS_ERR)
+		exitWithError(INVALID_ARGUMENTS_ERR, nil)
 	}
 	operationArg := os.Args[1]
 	filePath := os.Args[2]
@@ -34,13 +35,16 @@ func main() {
 	fileInfo, file := openFile(filePath)
 	switch operationArg {
 	case BYTE_COUNT_OPERATION, CHAR_COUNT_OPERATION:
-		count_ops.PrintFileByteCount(fileInfo)
+		byteCount := count_ops.FileByteCount(fileInfo)
+		fmt.Println(byteCount, fileInfo.Name())
 	case NEWLINE_COUNT_OPERATION:
-		count_ops.PrintFileNewlineCount(file)
+		newlineCount := count_ops.FileNewlineCount(file)
+		fmt.Println(newlineCount, fileInfo.Name())
 	case WORD_COUNT_OPERATION:
-		count_ops.PrintFileWordCount(fileInfo, file)
+		wordCount := count_ops.FileWordCount(fileInfo, file)
+		fmt.Println(wordCount, fileInfo.Name())
 	default:
-		exitWithError(INVALID_ARGUMENTS_ERR)
+		exitWithError(INVALID_ARGUMENTS_ERR, nil)
 	}
 	closeFile(file)
 }
