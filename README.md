@@ -9,9 +9,15 @@ Word Count console program written in GO to solve challenge in https://codingcha
     supported arguments:
 
         -c 
-            print the byte counts
+            print the byte count
             
         -l
-            print the newline counts
+            print the newline count
+
+        -m
+            print the character count
+
+        -w
+            print the word count
 
         

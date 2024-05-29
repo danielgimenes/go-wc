@@ -4,6 +4,17 @@ package main
 
 import (
 	"os"
+
+	"github.com/danielgimenes/gowc/count_ops"
+)
+
+type Operation string
+
+const (
+	BYTE_COUNT_OPERATION    Operation = "-c"
+	CHAR_COUNT_OPERATION    Operation = "-m"
+	NEWLINE_COUNT_OPERATION Operation = "-l"
+	WORD_COUNT_OPERATION    Operation = "-w"
 )
 
 func readCommandLineArgs() (Operation, string) {
@@ -23,11 +34,11 @@ func main() {
 	fileInfo, file := openFile(filePath)
 	switch operationArg {
 	case BYTE_COUNT_OPERATION, CHAR_COUNT_OPERATION:
-		printFileByteCount(fileInfo)
+		count_ops.PrintFileByteCount(fileInfo)
 	case NEWLINE_COUNT_OPERATION:
-		printFileNewlineCount(file)
+		count_ops.PrintFileNewlineCount(file)
 	case WORD_COUNT_OPERATION:
-		printFileWordCount(fileInfo, file)
+		count_ops.PrintFileWordCount(fileInfo, file)
 	default:
 		exitWithError(INVALID_ARGUMENTS_ERR)
 	}

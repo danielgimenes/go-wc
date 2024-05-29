@@ -1,4 +1,4 @@
-package main
+package count_ops
 
 import (
 	"fmt"
@@ -6,22 +6,13 @@ import (
 	"strings"
 )
 
-type Operation string
-
-const (
-	BYTE_COUNT_OPERATION    Operation = "-c"
-	CHAR_COUNT_OPERATION    Operation = "-m"
-	NEWLINE_COUNT_OPERATION Operation = "-l"
-	WORD_COUNT_OPERATION    Operation = "-w"
-)
-
 const FILE_READ_BUFFER_SIZE = 4096 // 4kb
 
-func printFileByteCount(fileInfo os.FileInfo) {
+func PrintFileByteCount(fileInfo os.FileInfo) {
 	fmt.Println(fileInfo.Size(), fileInfo.Name())
 }
 
-func printFileNewlineCount(file *os.File) {
+func PrintFileNewlineCount(file *os.File) {
 	newlines := 0
 	data := make([]byte, FILE_READ_BUFFER_SIZE)
 	readBytes, fileReadErr := file.Read(data)
@@ -36,7 +27,7 @@ func printFileNewlineCount(file *os.File) {
 	fmt.Println(newlines, file.Name())
 }
 
-func printFileWordCount(fileInfo os.FileInfo, file *os.File) {
+func PrintFileWordCount(fileInfo os.FileInfo, file *os.File) {
 	words := 0
 	data := make([]byte, fileInfo.Size()) // read the whole file to avoid split words
 	readBytes, fileReadErr := file.Read(data)
