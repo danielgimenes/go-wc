@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 const NO_ARGS_SUPPLIED_ERR = "no arguments were supplied."
@@ -27,13 +28,13 @@ func main() {
 	}
 	operationArg := os.Args[1]
 	filePath := os.Args[2]
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		exitWithError(CANT_GET_FILE_INFO_ERR)
+	}
 
 	switch operationArg {
 	case "-c":
-		fileInfo, err := os.Stat(filePath)
-		if err != nil {
-			exitWithError(CANT_GET_FILE_INFO_ERR)
-		}
 		fmt.Println(fileInfo.Size(), fileInfo.Name())
 	case "-l":
 		file, err := os.Open(filePath)
@@ -49,11 +50,29 @@ func main() {
 					newlines++
 				}
 			}
-			//fmt.Println("newlines:", newlines)
 			readBytes, fileReadErr = file.Read(data)
 		}
 		closeErr := file.Close()
 		fmt.Println(newlines, file.Name())
+		if closeErr != nil {
+			exitWithError(CLOSE_FILE_ERR)
+		}
+	case "-w":
+		file, err := os.Open(filePath)
+		if err != nil {
+			exitWithError(CANT_OPEN_FILE_ERR)
+		}
+		words := 0
+		data := make([]byte, fileInfo.Size()) // read the whole file
+		readBytes, fileReadErr := file.Read(data)
+		for fileReadErr == nil && readBytes != 0 {
+			strRead := string(data[:readBytes])
+			words += len(strings.Fields(strRead))
+			readBytes, fileReadErr = file.Read(data)
+		}
+
+		closeErr := file.Close()
+		fmt.Println(words, file.Name())
 		if closeErr != nil {
 			exitWithError(CLOSE_FILE_ERR)
 		}
