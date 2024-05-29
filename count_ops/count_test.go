@@ -30,12 +30,25 @@ func tempFileCleanup(file *os.File) {
 }
 
 func TestFileByteCount(t *testing.T) {
-	fileContent := "abc123\nSomething\t\n"
-	fileInfo, file := createTempFile(fileContent)
-	expected := int64(len(fileContent))
-	result := FileByteCount(fileInfo)
-	tempFileCleanup(file)
-	if expected != result {
-		t.Errorf("Expected %d, received %v", expected, result)
+	var tests = []struct {
+		name        string
+		fileContent string
+		want        int64
+	}{
+		{"many chars and symbols", "abc 123\nSomething.!?\t\n@", 23},
+		{"single letter", "a", 1},
+		{"no content", "", 0},
+		{"complex", "\n\t\b", 3},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fileInfo, file := createTempFile(tt.fileContent)
+			result := FileByteCount(fileInfo)
+			tempFileCleanup(file)
+			if result != tt.want {
+				t.Errorf("Expected %d, received %v", tt.want, result)
+			}
+		})
 	}
 }
