@@ -16,7 +16,8 @@ func FileNewlineCount(file *os.File) int {
 	data := make([]byte, FILE_READ_BUFFER_SIZE)
 	readBytes, fileReadErr := file.Read(data)
 	for fileReadErr == nil && readBytes != 0 {
-		for _, c := range string(data[:readBytes]) {
+		chunk := string(data[:readBytes])
+		for _, c := range chunk {
 			if c == '\n' {
 				newlines++
 			}
