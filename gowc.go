@@ -13,6 +13,9 @@ const CANT_GET_FILE_INFO_ERR = "can't get file info."
 const CLOSE_FILE_ERR = "can't close file"
 const FILE_READ_BUFFER_SIZE = 4096 // 4kb
 
+// TODO organize error code, buffered read and counts into modules
+// TODO add unit tests
+
 func exitWithError(errorMessage string) {
 	fmt.Println("Error:", errorMessage)
 	os.Exit(1)
@@ -34,7 +37,7 @@ func main() {
 	}
 
 	switch operationArg {
-	case "-c":
+	case "-c", "-m":
 		fmt.Println(fileInfo.Size(), fileInfo.Name())
 	case "-l":
 		file, err := os.Open(filePath)
@@ -70,7 +73,6 @@ func main() {
 			words += len(strings.Fields(strRead))
 			readBytes, fileReadErr = file.Read(data)
 		}
-
 		closeErr := file.Close()
 		fmt.Println(words, file.Name())
 		if closeErr != nil {
