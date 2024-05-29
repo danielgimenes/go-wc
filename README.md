@@ -20,4 +20,6 @@ Word Count console program written in GO to solve challenge in https://codingcha
         -w
             print the word count
 
+    in case no option is supplied, the newline, word and byte counts are going to be displayed.
+
         
